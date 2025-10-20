@@ -35,6 +35,18 @@ setopt share_history
 # 同じコマンドをヒストリに残さない
 setopt hist_ignore_all_dups
 
+# エイリアス
+alias ll='ls -l --color=auto'
+alias g='git'
+alias gs='git switch'
+
+
+# 補完
+FPATH=$HOMEBREW_PREFIX/share/zsh-completions:$FPATH
+autoload -Uz compinit
+compinit
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+
 # インストールするソフトウェアのインストールチェックとインストール
 software_list=("ghq" "peco" "nodebrew" "zsh-completions" "zsh-syntax-highlighting" "zsh-autosuggestions")
 brew_list=($(brew list))
@@ -44,12 +56,6 @@ for software in "${software_list[@]}"; do
         brew install "$software"
     fi
 done
-
-# 補完
-FPATH=$HOMEBREW_PREFIX/share/zsh-completions:$FPATH
-autoload -Uz compinit
-compinit
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 # zsh プラグイン
 source $HOMEBREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
@@ -68,5 +74,15 @@ zle -N peco-ghq
 # peco の起動コマンド
 bindkey '^]' peco-ghq
 
+function gp () {
+    local selected_dir=$(ghq list -p | peco --query "$LBUFFER")
+    if [ -n "$selected_dir" ]; then
+        cd $selected_dir
+    fi
+}
+
 # path 設定
 export PATH=$HOME/.nodebrew/current/bin:$PATH
+
+export SDKMAN_DIR=$(brew --prefix sdkman-cli)/libexec
+[[ -s "${SDKMAN_DIR}/bin/sdkman-init.sh" ]] && source "${SDKMAN_DIR}/bin/sdkman-init.sh"
